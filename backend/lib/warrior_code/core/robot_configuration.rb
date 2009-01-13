@@ -6,14 +6,9 @@ require 'pathname'
 require 'configuration'
 
 # TODO:
-# The current parsing method is a 1970's C-style mess.  There is a better way.
-# The difficulty is that the token stack needs to be in an expected state.
-# If we underscore connect all the elements when a given process needs to be done,
-# we can then call a method with that name.  For example, a component definition
-# is only useful when the current stack is ['robot', 'components', component'].
-# We could call robot_components_component, passing in any attributes and character
-# data gathered during processing of the element, when the end_tag event is called.
-# If the method exists, there is nothing to do, and we go on.
+# The current text and attributes gathering should utilize a stack, so that 
+# attributes on nested components can be retrieved at the correct time.
+# Really, I need a stack of hashes with this kind of data!
 
 module Core
   class RobotConfiguration < Hash
@@ -29,8 +24,7 @@ module Core
       puts file.inspect
       file_path = Pathname.new(file)
       io = File.new(file_path)
-      @robot_definitions_seen = 0
-      @parse_stack = []
+      @current_data = {:robot_definitions_seen => 0, :parse_stack => []}
       @parser = REXML::Parsers::SAX2Parser.new(io)
       @parser.listen(self)
       @parser.parse
@@ -38,82 +32,47 @@ module Core
     end
     
     def start_element(uri, localname, qualified_name, attributes)
-      # Print Diagnostic Line
-      puts "START ELEMENT: #{uri}, #{localname}, #{qualified_name}, #{attributes.inspect}"
+      # Raise an error if the element is unrecognized.
+      raise ParseError, "Unrecognized element name: #{localname}" unless @@element_names.include?(localname)
       
-      # Add element to stack
-      @parse_stack << localname
+      # Special check
+      raise "The configuration file may only define a single robot." if localname=='robot' && @current_data[:robot_definitions_seen]!=0
       
-      # Do any special work up front.
-      case localname
-      when 'robot'
-        raise "A config file cannot contain more than one robot." unless @robot_definitions_seen.zero?
-      when 'component'
-        if check_stack(['robot', 'components', 'component'])
-          self['COMPONENTS'] ||= []
-          self['COMPONENTS'] << attributes['class'] # This should really instantiate the class and add it to the list?
-        else
-          stack_error
-        end
-      else
-        raise ParseError, "Unrecognized element name: #{localname}" unless @@element_names.include?(localname)
-      end
+      # Add element to stack and take any necessary notes
+      @current_data[:parse_stack] << localname
+      @current_data[:attributes] = attributes
+      @current_data[:text] = ''
     end
     
     def end_element(uri, localname, qualified_name)
-      # Print Diagnostic Line
-      puts "END ELEMENT: #{uri}, #{localname}, #{qualified_name.inspect}"
       
-      # Pop the element from stack.
-      stack_element = @parse_stack.pop
+      # Error if the tag is unexpected
+      stack_element = @current_data[:parse_stack][-1]
       raise ParseError, "End element encountered with no matching start element: got #{localname.inspect} but expected #{stack_element.inspect}" if localname != stack_element
       
-      # Do any special work.
-      case localname
-      when 'robot'
-        @robot_definitions_seen += 1
-      else
-        # Do nothing as element name validation was done up front.
-      end
+      # Build the method and call it, if available
+      method = ("process_" + @current_data[:parse_stack].join('_').underscore).to_sym
+      STDOUT << "send(#{method.inspect}) with current data #{@current_data.inspect}\n\n"
+      self.send(method) if (methods|private_methods).include?(method.to_s)
+      
+      # Pop off the top element as we are done with it now.
+      @current_data[:parse_stack].pop
+      @current_data[:attributes] = {}
+      @current_data[:text] = ''
     end
     
     def characters(raw_text)
-      text = raw_text.strip
-      return if text.empty?
-      puts "CHARACTERS: #{text}"
-      
-      case @parse_stack[-1]
-      when 'robot'
-        raise ParseError, "Unrecognized text in robot element: #{text}"
-      when 'name'
-        check_stack(['robot', 'name']) ? self['NAME'] = text : stack_error
-      when 'file'
-        if check_stack ['robot', 'require', 'file']
-          self['REQUIRE_FILES'] ||= []
-          self['REQUIRE_FILES'] << text
-        else
-          stack_error
-        end
-      else
-        # Do nothing as element name validation was done up front.
-      end
+      @current_data[:text] += raw_text.strip
     end
     
     private
     
-    def check_stack(*args)
-      expected_stack = args.flatten
-      return (expected_stack==@parse_stack) ? true : false
+    def process_robot
+      @current_data[:robot_definitions_seen] += 1
     end
     
-    def stack_error(*args)
-      expected_stack = args.flatten
-      return unless expected_stack!=@parse_stack
-      if expected_stack.empty?
-        raise ParseError, "Unexpected illegal stack state #{@parse_stack.inspect}", caller
-      else
-        raise ParseError, "Expected parse stack to be #{expected_stack.inspect}, but it was #{@parse_stack.inspect}", caller
-      end
+    def process_robot_name
+      self['NAME'] = @current_data[:text]
     end
     
   end

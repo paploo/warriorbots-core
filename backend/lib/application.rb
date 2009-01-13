@@ -26,18 +26,21 @@ class Application
   def initialize
     @arena = Sim::Arena.new
     @config = CONFIG
-    @command_stack = ['DEBUGGING_INFO', 'EXIT'] # This is supposed to init to [] and get exit from a TCP/IP stack.
     Sim::Robot.start_server
   end
   
   attr_reader :arena, :config, :command_stack
   
   def run
-    puts self.inspect
-    loop do
-      cmd = @command_stack.shift.to_s
-      Application::Command.execute(cmd)
+    t = Thread.new do
+      loop do
+        STDOUT << '>> '
+        STDOUT.flush
+        cmd = STDIN.gets.chomp # This would normally be taking input from TCP/IP
+        Application::Command.execute(cmd)
+      end
     end
+    t.join
   end
   
   def exit

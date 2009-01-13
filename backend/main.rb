@@ -4,7 +4,7 @@ require File.join(dir_path, 'lib', 'configuration')
 
 # Do the main configuration
 CONFIG = Configuration.new() do |conf|
-  puts "#{RUBY_VERSION} p#{RUBY_PATCHLEVEL}"
+  puts "Running with ruby #{RUBY_VERSION} p#{RUBY_PATCHLEVEL}"
   
   # What is the path to the ruby executable used to boot robots?
   conf['RUBY_PATH'] = Pathname.new('/usr/local/bin/ruby')

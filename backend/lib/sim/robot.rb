@@ -3,6 +3,7 @@ require 'socket'
 
 require 'double_state_buffered_object'
 require 'child_process'
+require 'extensions/io'
 
 module Sim
   class Robot < DoubleStateBufferedObject
@@ -20,8 +21,15 @@ module Sim
         end
       end
     end
+    
+    def self.robot_for_ident(ident)
+      obj = ObjectSpace._id2ref(ident.to_i)
+      return obj if obj.kind_of?(Robot)
+      raise SecurityError, "Cannot find a Robot with ident=#{ident.inspect}"
+    end
   
     def self.handle_connect(socket, handshake_data)
+      puts "handle_connect(#{socket.inspect}, #{handshake_data.inspect})"
       robot = robot_for_ident(handshake_data[:ident])
       robot.instance_variable_set(:@socket, socket)
       robot.instance_variable_set(:@bootstrapped, true)
@@ -30,7 +38,7 @@ module Sim
   
     def initialize(robot_dir)
       @robot_dir = Pathname.new(robot_dir).expand_path # The robot's source/resource directory.  NEVER RUN FILES IN IT!
-      @ident = object_id # The id of the robot.
+      @ident = object_id.to_s # The guid of the robot.
     
       @components = []
     
@@ -39,6 +47,8 @@ module Sim
       @thread = nil # The thread that the robot process is running in. (It does a wait and only exits if the script exits)
       @process = nil # The process object for the robot process in case one needs to poke it.
     end
+    
+    attr_reader :ident
   
     def boot
       # Run the bootstrapper, in a thread, passing in the connection port, the robot ident, and script directory path.

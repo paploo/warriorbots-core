@@ -30,16 +30,20 @@ module Core
       parse_arguments()
       @robot = nil
       @socket = nil
-      yield self if block_given?
+      yield(self) if block_given?
     end
     
     attr_reader :socket, :robot, :config
     
     # Bootstrap the script, getting it all up and running.
     def bootstrap
-      #establish_connection()
+      establish_connection()
       load_robot()
-      yield self if block_given?
+      yield(self) if block_given?
+    end
+    
+    # Start the primary event loop
+    def run
     end
     
     private
@@ -47,7 +51,7 @@ module Core
     def parse_arguments
       # Create the configuration and its default values
       @config = Configuration.new do |conf|
-        conf['CONNECTION_ADDRESS'] = 'localhost'
+        conf['CONNECTION_HOST'] = 'localhost'
         conf['CONNECTION_PORT'] = 4000
         
         conf['IDENT'] = nil
@@ -83,6 +87,8 @@ module Core
     # Establishes a connection with the server and stores it where it can
     # be accessed.
     def establish_connection
+      puts "establish_connection:"
+      puts [@config['CONNECTION_HOST'], @config['CONNECTION_PORT']].inspect
       @socket = TCPSocket.new(@config['CONNECTION_HOST'], @config['CONNECTION_PORT']) # The port should be an arg.
       handshake_data_hash = {:ident => @config['IDENT'], :pid => Process.pid}
       @socket.write_object(handshake_data_hash)

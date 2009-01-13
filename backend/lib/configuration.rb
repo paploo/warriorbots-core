@@ -9,16 +9,18 @@ class Configuration < Hash
   end
   
   class << self
-    alias_method :ruby_new, :new
+   alias_method :ruby_new, :new
   end
   
   def self.new(*args, &block)
-    @@instance = self.ruby_new(*args, &block) if @@instance.nil?
-    return @@instance
+   @@instance = self.ruby_new(*args, &block) if @@instance.nil?
+   return @@instance
   end
   
   def initialize()
-    super()
+    # Putting the super in causes some interesting issues:  multiple values for a block parameter (2 for 1) when accessing an element.
+    # My guess is that it uses the block given when trying to access a key that doesn't exist.
+    #super()
     yield(self) if block_given?
   end
   
@@ -29,12 +31,12 @@ class Configuration < Hash
   
   # Override the default get method so that we can stringify the key.
   def [](key)
-    ruby_get(key&&key.to_s)
+   ruby_get(key&&key.to_s)
   end
   
   # Override the default get method so that we can stringify the key.
   def []=(key,value)
-    ruby_set(key&&key.to_s, value)
+   ruby_set(key&&key.to_s, value)
   end
   
 end

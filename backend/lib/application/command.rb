@@ -2,7 +2,7 @@ class Application
   class Command
     
     def self.execute(cmd)
-      cmd, *args = cmd.strip.split(/\s+/)
+      cmd, *args = cmd.strip.split(/\s+/) # This needs to be replaced with XML commands when the spec is solidified
       method = (cmd.nil?||cmd.empty?) ? nil : cmd.downcase.to_sym
       if( method && self.respond_to?(cmd) )
         begin

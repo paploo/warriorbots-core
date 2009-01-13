@@ -8,7 +8,9 @@ require 'warrior_code/core/base'
 
 # Start the wrapped code
 begin
-  Core::Base.new.bootstrap
+  Core::Base.new
+  Core::Base.instance.bootstrap
+  Core::Base.instance.run
 rescue SystemExit => e
   exit(e.status)
 rescue Exception => e

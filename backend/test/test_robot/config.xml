@@ -1,0 +1,11 @@
+<robot>
+    <name>TestRobot</name>
+    <components>
+        <component class='ChassisComponent' />
+        <component class='CoreComponent' />
+    </components>
+    <require>
+        <file>main</file>
+        <file>pathname</file>
+    </require>
+</robot>

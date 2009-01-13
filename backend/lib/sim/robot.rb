@@ -28,8 +28,8 @@ module Sim
       return robot
     end
   
-    def initialize(script_dir)
-      @script_dir = Pathname.new(script_dir) # The robot's source/resource directory.
+    def initialize(robot_dir)
+      @robot_dir = Pathname.new(robot_dir).expand_path # The robot's source/resource directory.  NEVER RUN FILES IN IT!
       @ident = object_id # The id of the robot.
     
       @components = []

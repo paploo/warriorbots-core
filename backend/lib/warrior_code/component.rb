@@ -1,14 +1,21 @@
+require 'warrior_code/core/component'
+
 # This is not namespaced for ease of use by new robot devs.
-class Component
+#
+# This class is the developer facing Component class, and contains the
+# developer facing APIs.  (The backend work is done in Core::Component)
+class Component < Core::Component
   
-  # Need code for managing componet communications:
-    # Send messages to the server.
-    # Get the response for the send (which I expect we'll just wait on I/O for the response?
-    # Recieve callback requests.
+  # Returns a list of callbacks as symbols.
+  def self.callbacks()
+  end
   
-  # In 'production', the component definitions don't change.  Therefore it is
-  # fastest for robot booting to have class files for each component defined in
-  # the warrior_code framework.  The method stubs all need to call the same
-  # private method that sends the API call via proxy.
+  # Registers the passed block to the callback of the given name.
+  def self.register_callback(callback, &block)
+  end
+  
+  # Deregisters the given callback.
+  def self.deregister_callback(callback)
+  end
   
 end

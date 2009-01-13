@@ -3,7 +3,6 @@ require 'socket'
 
 require 'double_state_buffered_object'
 require 'child_process'
-require 'extensions/io'
 
 module Sim
   class Robot < DoubleStateBufferedObject
@@ -22,7 +21,7 @@ module Sim
       end
     end
     
-    def self.robot_for_ident(ident)
+    def self.from_ident(ident)
       obj = ObjectSpace._id2ref(ident.to_i)
       return obj if obj.kind_of?(Robot)
       raise SecurityError, "Cannot find a Robot with ident=#{ident.inspect}"
@@ -30,7 +29,7 @@ module Sim
   
     def self.handle_connect(socket, handshake_data)
       puts "handle_connect(#{socket.inspect}, #{handshake_data.inspect})"
-      robot = robot_for_ident(handshake_data[:ident])
+      robot = from_ident(handshake_data[:ident])
       robot.instance_variable_set(:@socket, socket)
       robot.instance_variable_set(:@bootstrapped, true)
       return robot
@@ -39,6 +38,7 @@ module Sim
     def initialize(robot_dir)
       @robot_dir = Pathname.new(robot_dir).expand_path # The robot's source/resource directory.  NEVER RUN FILES IN IT!
       @ident = object_id.to_s # The guid of the robot.
+      puts "New Robot Ident: #{ident}"
     
       @components = []
     
@@ -48,11 +48,16 @@ module Sim
       @process = nil # The process object for the robot process in case one needs to poke it.
     end
     
-    attr_reader :ident
+    attr_reader :ident, :robot_dir, :components
   
     def boot
       # Run the bootstrapper, in a thread, passing in the connection port, the robot ident, and script directory path.
-      @thread = Thread.new
+      @thread = Thread.new do
+        cmd = "#{CONFIG['RUBY_PATH']} #{CONFIG['BACKEND_ROOT']+'script'+'robot_bootstrap.rb'} --host localhost --port 4000 --ident #{ident} #{robot_dir}"
+        puts cmd.inspect
+        @process = ChildProcess.new(cmd)
+        puts "Child Process For Robot #{ident} running on pid #{@process.pid}"
+      end
     
       # Wait for it to bootstrap
       start_wait = Time.now

@@ -9,6 +9,8 @@ module Sim
       self.tick_current = 0
       @robots = []
     end
+    
+    attr_reader :robots
   
     def load_robot(robot_dir)
       @robots << Robot.new(robot_dir)

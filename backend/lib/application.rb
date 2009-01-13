@@ -1,3 +1,4 @@
+require 'extensions'
 require 'sim'
 require 'application/command'
 
@@ -29,7 +30,7 @@ class Application
     Sim::Robot.start_server
   end
   
-  attr_reader :arena, :config, :command_stack
+  attr_reader :arena, :config
   
   def run
     t = Thread.new do
@@ -37,15 +38,22 @@ class Application
         STDOUT << '>> '
         STDOUT.flush
         cmd = STDIN.gets.chomp # This would normally be taking input from TCP/IP
-        Application::Command.execute(cmd)
+        begin
+          Application::Command.execute(cmd)
+        rescue SystemExit => se
+          raise se
+        rescue Exception => e
+          STDERR.puts e.to_full_s
+        end
       end
     end
     t.join
   end
   
-  def exit
-    puts "[Exiting]"
-    Kernel.exit(0)
+  def exit(status=0)
+    status = status.to_i
+    puts "[Exiting#{'(' + status.to_s + ')' unless status.zero?}]"
+    Kernel.exit(status)
   end
   
 end

@@ -20,8 +20,8 @@ class Application
     end
     
     # Exit the backend; quit gracefully
-    def self.exit
-      Application.instance.exit
+    def self.exit(status=0)
+      Application.instance.exit(status)
     end
     
     # Exit the backend; quit gracefully
@@ -33,7 +33,21 @@ class Application
     # standard out.
     def self.debugging_info
       puts "========== DEBUGGING INFO =========="
+      puts "Arena:"
+      puts "#{APP.arena.inspect}"
       puts "===================================="
+    end
+    
+    # The default for the argument should be removed when things are working better.
+    def self.load_robot(path="/Users/paploo/Projects/SVN_Crudephysics/trunk/backend/test/test_robot")
+      pn = Pathname.new(path).expand_path
+      puts "Loading with path: #{pn.to_s}"
+      APP.arena.load_robot(path)
+    end
+    
+    def self.boot_robot(ident)
+      robot = Sim::Robot.from_ident(ident)
+      robot.boot
     end
     
   end

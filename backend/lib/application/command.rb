@@ -16,7 +16,7 @@ class Application
     end
     
     def self.help
-      LOG.info (self.methods - Object.methods).sort.inspect
+      LOG.info((self.methods - Object.methods).sort.inspect)
     end
     
     # Exit the backend; quit gracefully

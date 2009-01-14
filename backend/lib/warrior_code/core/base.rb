@@ -93,7 +93,7 @@ module Core
     def setup_logger
       @log = Logger.new(STDOUT)
       @log.formatter = lambda do |level,time,program_name,msg|
-        "[#{Process.pid.to_s.rjust(5)}][#{level.rjust(5)}] #{msg}\n"
+        "[#{Process.pid.to_s.rjust(5)}][#{Thread.current.name}][#{level.rjust(5)}] #{msg}\n"
         #{}"[#{time.strftime('%Y-%m-%d %H:%M:%S')}][#{Process.pid.to_s.rjust(5)}][#{level.rjust(5)}] #{msg}\n"
       end
       

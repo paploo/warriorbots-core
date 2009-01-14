@@ -1,3 +1,4 @@
+require 'extensions/thread.rb'
 require 'extensions/exception.rb'
 require 'extensions/hash.rb'
 require 'extensions/io.rb'

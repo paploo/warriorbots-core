@@ -21,12 +21,15 @@ end
 require 'logger'
 LOG = Logger.new(STDOUT)
 LOG.formatter = lambda do |level,time,program_name,msg|
-  "[#{Process.pid.to_s.rjust(5)}][#{level.rjust(5)}] #{msg}\n"
+  "[#{Thread.current.name.rjust(8)}][#{level.rjust(5)}] #{msg}\n"
   #{}"[#{time.strftime('%Y-%m-%d %H:%M:%S')}][#{Process.pid.to_s.rjust(5)}][#{level.rjust(5)}] #{msg}\n"
 end
 
 # Define a load path that leads directly to the application's lib directory.
 $LOAD_PATH << CONFIG['LIB_DIR'].expand_path.to_s
+
+# Load our custom thread extensions
+require 'extensions/thread'
 
 # Init the application object
 require 'application'

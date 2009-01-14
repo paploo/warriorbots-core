@@ -34,6 +34,7 @@ class Application
   
   def run
     t = Thread.new do
+      LOG.info "Running with ruby #{RUBY_VERSION} p#{RUBY_PATCHLEVEL}"
       loop do
         STDOUT << '>> '
         STDOUT.flush
@@ -52,7 +53,7 @@ class Application
   
   def exit(status=0)
     status = status.to_i
-    puts "[Exiting#{'(' + status.to_s + ')' unless status.zero?}]"
+    LOG.info "[Exiting#{'(' + status.to_s + ')' unless status.zero?}]"
     Kernel.exit(status)
   end
   

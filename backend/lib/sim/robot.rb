@@ -28,7 +28,7 @@ module Sim
     end
   
     def self.handle_connect(socket, handshake_data)
-      puts "handle_connect(#{socket.inspect}, #{handshake_data.inspect})"
+      LOG.debug "handle_connect(#{socket.inspect}, #{handshake_data.inspect})"
       robot = from_ident(handshake_data[:ident])
       robot.instance_variable_set(:@socket, socket)
       robot.instance_variable_set(:@bootstrapped, true)
@@ -38,7 +38,7 @@ module Sim
     def initialize(robot_dir)
       @robot_dir = Pathname.new(robot_dir).expand_path # The robot's source/resource directory.  NEVER RUN FILES IN IT!
       @ident = object_id.to_s # The guid of the robot.
-      puts "New Robot Ident: #{ident}"
+      LOG.debug "New Robot Ident: #{ident}"
     
       @components = []
     
@@ -54,9 +54,9 @@ module Sim
       # Run the bootstrapper, in a thread, passing in the connection port, the robot ident, and script directory path.
       @thread = Thread.new do
         cmd = "#{CONFIG['RUBY_PATH']} #{CONFIG['BACKEND_ROOT']+'script'+'robot_bootstrap.rb'} --host localhost --port 4000 --ident #{ident} #{robot_dir}"
-        puts cmd.inspect
+        LOG.debug cmd.inspect
         @process = ChildProcess.new(cmd)
-        puts "Child Process For Robot #{ident} running on pid #{@process.pid}"
+        LOG.debug "Child Process For Robot #{ident} running on pid #{@process.pid}"
       end
     
       # Wait for it to bootstrap
@@ -66,6 +66,7 @@ module Sim
         delta_t = Time.now - start_wait
         raise RuntimeError, "Bootstrapping seems to have failed; waited 60 seconds." if delta_t > 60.0
       end
+      LOG.debug( "Robot #{ident} bootstrapped." )
     end
   
   end

@@ -8,15 +8,15 @@ class Application
         begin
           self.send(method, *args)
         rescue ArgumentError => e
-          STDERR.puts "#{e.class.name}: #{e.message}"
+          LOG.error "#{e.class.name}: #{e.message}"
         end
       else
-        STDERR.puts "Unknown command #{cmd.inspect}"
+        LOG.error "Unknown command #{cmd.inspect}"
       end
     end
     
     def self.help
-      puts (self.methods - Object.methods).sort.inspect
+      LOG.info (self.methods - Object.methods).sort.inspect
     end
     
     # Exit the backend; quit gracefully
@@ -30,18 +30,18 @@ class Application
     end
     
     # Print whatever debugging information the developers feel like printing to
-    # standard out.
+    # the log.
     def self.debugging_info
-      puts "========== DEBUGGING INFO =========="
-      puts "Arena:"
-      puts "#{APP.arena.inspect}"
-      puts "===================================="
+      LOG.info "========== DEBUGGING INFO =========="
+      LOG.info "Arena:"
+      LOG.info "#{APP.arena.inspect}"
+      LOG.info "===================================="
     end
     
     # The default for the argument should be removed when things are working better.
     def self.load_robot(path="/Users/paploo/Projects/SVN_Crudephysics/trunk/backend/test/test_robot")
       pn = Pathname.new(path).expand_path
-      puts "Loading with path: #{pn.to_s}"
+      LOG.debug "Loading with path: #{pn.to_s}"
       APP.arena.load_robot(path)
     end
     

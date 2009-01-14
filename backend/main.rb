@@ -4,8 +4,6 @@ require File.join(dir_path, 'lib', 'configuration')
 
 # Do the main configuration
 CONFIG = Configuration.new() do |conf|
-  puts "Running with ruby #{RUBY_VERSION} p#{RUBY_PATCHLEVEL}"
-  
   # What is the path to the ruby executable used to boot robots?
   conf['RUBY_PATH'] = Pathname.new('/usr/local/bin/ruby')
   
@@ -17,6 +15,14 @@ CONFIG = Configuration.new() do |conf|
   
   # Turn on abort_on_exception so that we can get errors from crashed threads.
   Thread.abort_on_exception = true
+end
+
+# Make the logger and configure it.
+require 'logger'
+LOG = Logger.new(STDOUT)
+LOG.formatter = lambda do |level,time,program_name,msg|
+  "[#{Process.pid.to_s.rjust(5)}][#{level.rjust(5)}] #{msg}\n"
+  #{}"[#{time.strftime('%Y-%m-%d %H:%M:%S')}][#{Process.pid.to_s.rjust(5)}][#{level.rjust(5)}] #{msg}\n"
 end
 
 # Define a load path that leads directly to the application's lib directory.

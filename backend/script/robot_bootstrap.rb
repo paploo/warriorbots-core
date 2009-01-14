@@ -1,3 +1,8 @@
+# Configure any signal traps and exit loops
+Signal.trap('SIGINT') {exit(0)}
+Signal.trap('SIGQUIT') {exit(0)}
+Signal.trap('SIGTERM') {exit(0)}
+
 # Find the lib directory and make a loadpath for it.
 require 'pathname'
 LIB_DIR =  Pathname.new(__FILE__).dirname + '..' + 'lib'

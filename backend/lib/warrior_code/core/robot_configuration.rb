@@ -21,7 +21,7 @@ module Core
     @@element_names = ['robot', 'name', 'components', 'component', 'require', 'file']
     
     def initialize(file)
-      puts file.inspect
+      LOG.debug file.inspect
       file_path = Pathname.new(file)
       io = File.new(file_path)
       @current_data = {:robot_definitions_seen => 0, :parse_stack => []}

@@ -1,5 +1,6 @@
 require 'socket'
 require 'optparse'
+require 'logger'
 
 require 'configuration'
 require 'extensions'
@@ -27,9 +28,15 @@ module Core
     
     # Initializes the core, but does not bootstrap it.
     def initialize
-      parse_arguments()
+      # Define instance variables
+      @log = nil
+      @config = nil
       @robot = nil
       @socket = nil
+      # Initialize those that should be done now.
+      parse_arguments()
+      setup_logger()
+      # Call the block if necessary.
       yield(self) if block_given?
     end
     
@@ -78,17 +85,25 @@ module Core
       # Get the script directory path off the end.
       raise ArgumentError, "No robot script path given" if ARGV.length.zero?
       @config['ROBOT_DIR'] = Pathname.new(ARGV.pop).expand_path
+    end
+    
+    # Setup the logger
+    def setup_logger
+      @log = Logger.new(STDOUT)
+      @log.formatter = lambda do |level,time,program_name,msg|
+        "[#{Process.pid.to_s.rjust(5)}][#{level.rjust(5)}] #{msg}\n"
+        #{}"[#{time.strftime('%Y-%m-%d %H:%M:%S')}][#{Process.pid.to_s.rjust(5)}][#{level.rjust(5)}] #{msg}\n"
+      end
       
-      puts '----- CONFIGURATION -----'
-      puts @config.inspect
-      puts '-------------------------'
+      Kernel.const_set('LOG', @log)
     end
     
     # Establishes a connection with the server and stores it where it can
     # be accessed.
     def establish_connection
-      puts "establish_connection:"
-      puts [@config['CONNECTION_HOST'], @config['CONNECTION_PORT']].inspect
+      LOG.debug self.inspect
+      LOG.debug "establish_connection:"
+      LOG.debug([@config['CONNECTION_HOST'], @config['CONNECTION_PORT']].inspect)
       @socket = TCPSocket.new(@config['CONNECTION_HOST'], @config['CONNECTION_PORT']) # The port should be an arg.
       handshake_data_hash = {:ident => @config['IDENT'], :pid => Process.pid}
       @socket.write_object(handshake_data_hash)

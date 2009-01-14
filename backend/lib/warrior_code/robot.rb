@@ -21,10 +21,10 @@ require 'warrior_code/core/robot_configuration'
 class Robot
   
   def initialize(robot_dir)
-    puts "LOAD ROBOT: #{robot_dir.inspect}"
+    LOG.debug "LOAD ROBOT: #{robot_dir.inspect}"
     @robot_dir = Pathname.new(robot_dir).expand_path
     @config = Core::RobotConfiguration.new(robot_dir+'config.xml')
-    puts @config.inspect
+    LOG.debug @config.inspect
   end
   
 end

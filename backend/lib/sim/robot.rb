@@ -57,6 +57,8 @@ module Sim
         LOG.debug cmd.inspect
         @process = ChildProcess.new(cmd)
         LOG.debug "Child Process For Robot #{ident} running on pid #{@process.pid}"
+        @process.wait
+        LOG.debug "Child Process For Robot #{ident} died."
       end
     
       # Wait for it to bootstrap

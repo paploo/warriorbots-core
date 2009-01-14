@@ -51,6 +51,8 @@ module Core
     
     # Start the primary event loop
     def run
+      sleep(2)
+      LOG.info "[EXIT]"
     end
     
     private

@@ -1,0 +1,52 @@
+* Implement :initialize callback on all components, and the CoreComponent needs
+  a :main or :main_loop callback
+  
+  
+---------- CALLBACKS / APIs COM ----------
+
+The cycle is like this, with [sim] referring to steps on the main backend, and
+[robot] referring to steps on the robot process.:
+
+* [sim] Sim::Robot.run_tick is called.  It chooses a sequential order to iterate
+  through the robot's components, firing callbacks.
+  
+* [sim] A component, in the robot's main thread, sends a message over the
+  network to call the callback on the remote robot.  It must block until the
+  callback is complete.
+  
+* [robot] The remote robot receives the callback request and calls the appropriate
+  callback handler.
+  
+* [robot] The callbacks may make API calls back to the "sim".
+
+* [sim] The core receives the API call and, in its own thread, runs the method
+  on the Component.  (Note we need validation checks to make sure the component
+  is valid on the robot, and that the method is a valid API method.)  (Also note
+  that other robots can be running API calls in their own threads as well, and
+  that they may need to access eachother's data, so mutex locks are important.)
+
+* [robot] When the callback is complete, the "sim" can be informed that the
+  callback is complete.
+  
+* [sim] The core receives notice that the callback is complete and returns from
+  the component callback fire method.
+  
+The trick is the right combination of handlers to make this all work.  It appears
+each sim::robot needs a communications handler method that can handle two kinds
+of methods:
+
+1. An API call, which is directed at a specific component instance and either
+an instance or class method on it.  (Proper validations of component and method
+must be done so that you can't hack into another robot's data or call a non-api
+method.)
+
+2. An initiated callback is complete and the callback method can be unblocked.
+
+The former is easier to implement because it can receive an API request, process
+it, and return the response, all from a single thread, without doing any
+processing.
+
+The latter is more complex because we must initiate the callback and then wait
+for something to happen before the thread can move-on.  (Is there some clever
+way of making a thread that does nothing, but can be killed when we are ready
+to move on?)

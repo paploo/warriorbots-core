@@ -8,21 +8,7 @@ require 'application/command'
 #
 # The 
 class Application
-  
-  @@instance = nil
-  
-  def self.instance
-    return self.new
-  end
-  
-  class << self
-    alias_method :ruby_new, :new
-  end
-  
-  def self.new(*args, &block)
-    @@instance = self.ruby_new(*args, &block) if @@instance.nil?
-    return @@instance
-  end
+  include Singleshire
   
   def initialize
     @arena = Sim::Arena.new

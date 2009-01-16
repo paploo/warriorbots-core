@@ -11,7 +11,8 @@ require 'configuration'
 # Really, I need a stack of hashes with this kind of data!
 
 module Core
-  class RobotConfiguration < Hash
+  class RobotConfiguration < Configuration
+    require 'singleshire'
     
     class ParseError < RuntimeError
     end

@@ -8,23 +8,7 @@ require 'warrior_code/robot'
 
 module Core
   class Base
-    @@instance = nil
-    
-    # Return the existing instance, or nil if there is not one yet.
-    def self.instance
-      return @@instance
-    end
-    
-    class << self
-      alias_method :new_ruby, :new
-    end
-    
-    # New has been redefined to make sure only one instance of the base ever
-    # exists.
-    def self.new(*args, &block)
-      @@instance = self.new_ruby(*args, &block) if @@instance.nil?
-      return @@instance
-    end
+    include Singleshire
     
     # Initializes the core, but does not bootstrap it.
     def initialize
@@ -59,7 +43,7 @@ module Core
     
     def parse_arguments
       # Create the configuration and its default values
-      @config = Configuration.new do |conf|
+      @config = Configuration.init do |conf|
         conf['CONNECTION_HOST'] = 'localhost'
         conf['CONNECTION_PORT'] = 4000
         

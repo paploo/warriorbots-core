@@ -1,17 +1,19 @@
-# Load up the configuration class
+require 'pathname'
+
+# Setup the special load path first
 dir_path = File.dirname(__FILE__)
-require File.join(dir_path, 'lib', 'configuration')
+$LOAD_PATH << Pathname.new(dir_path).expand_path + 'lib'
+
+# Load up the configuration class
+require 'configuration'
 
 # Do the main configuration
-CONFIG = Configuration.new() do |conf|
+CONFIG = Configuration.init do |conf|
   # What is the path to the ruby executable used to boot robots?
   conf['RUBY_PATH'] = Pathname.new('/usr/local/bin/ruby')
   
   # Initialize the backend root variable.
   conf['BACKEND_ROOT'] = Pathname.new(dir_path).expand_path
-  
-  # Build the initial list of library search paths.
-  conf['LIB_DIR'] = conf['BACKEND_ROOT'] + 'lib'
   
   # Turn on abort_on_exception so that we can get errors from crashed threads.
   Thread.abort_on_exception = true
@@ -24,15 +26,12 @@ LOG.formatter = lambda do |level,time,program_name,msg|
   "[#{Thread.current.name.rjust(8)}][#{level.rjust(5)}] #{msg}\n"
 end
 
-# Define a load path that leads directly to the application's lib directory.
-$LOAD_PATH << CONFIG['LIB_DIR'].expand_path.to_s
-
 # Load our custom thread extensions
 require 'extensions/thread'
 
 # Init the application object
 require 'application'
-APP = Application.new
+APP = Application.init
 
 # Configure any signal traps and exit loops
 Signal.trap('SIGINT') {APP.exit}

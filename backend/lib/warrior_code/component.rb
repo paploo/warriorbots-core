@@ -19,6 +19,3 @@ class Component < Core::Component
   end
   
 end
-
-# TODO:
-# We need an :initialize callback on all components, and the CoreComponent needs a :main or :main_loop callback

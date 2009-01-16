@@ -13,8 +13,9 @@ require 'warrior_code/core/base'
 
 # Start the wrapped code
 begin
-  Core::Base.new
-  Core::Base.instance.bootstrap
+  Core::Base.init do |core|
+    core.bootstrap
+  end
   Core::Base.instance.run
 rescue SystemExit => e
   exit(e.status)

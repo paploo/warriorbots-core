@@ -1,26 +1,12 @@
 require 'pathname'
+require 'singleshire'
 
 class Configuration < Hash
+  include Singleshire
   
-  @@instance = nil
-  
-  def self.instance
-    return @@instance
-  end
-  
-  class << self
-   alias_method :ruby_new, :new
-  end
-  
-  def self.new(*args, &block)
-   @@instance = self.ruby_new(*args, &block) if @@instance.nil?
-   return @@instance
-  end
-  
-  def initialize()
-    # Putting the super in causes some interesting issues:  multiple values for a block parameter (2 for 1) when accessing an element.
-    # My guess is that it uses the block given when trying to access a key that doesn't exist.
-    #super()
+  def initialize
+    # Don't even try to call super.  The block will be passed in and give an
+    # error because the Hash version of init takes over.
     yield(self) if block_given?
   end
   

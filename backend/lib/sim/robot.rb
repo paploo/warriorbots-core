@@ -1,11 +1,15 @@
 require 'pathname'
 require 'socket'
+require 'thread'
+require 'mutex_m'
 
 require 'double_state_buffered_object'
 require 'child_process'
 
 module Sim
   class Robot < DoubleStateBufferedObject
+    include Mutex_m
+    
     @@server = nil
     @@port = 4000
   
@@ -30,12 +34,16 @@ module Sim
     def self.handle_connect(socket, handshake_data)
       LOG.debug "handle_connect(#{socket.inspect}, #{handshake_data.inspect})"
       robot = from_ident(handshake_data[:ident])
-      robot.instance_variable_set(:@socket, socket)
-      robot.instance_variable_set(:@bootstrapped, true)
+      robot.synchronize do
+        robot.instance_variable_set(:@socket, socket)
+        robot.instance_variable_set(:@bootstrapped, true)
+      end
       return robot
     end
   
     def initialize(robot_dir)
+      super()
+      
       @robot_dir = Pathname.new(robot_dir).expand_path # The robot's source/resource directory.  NEVER RUN FILES IN IT!
       @ident = object_id.to_s # The guid of the robot.
       LOG.debug "New Robot Ident: #{ident}"
@@ -55,7 +63,9 @@ module Sim
       @thread = Thread.new do
         cmd = "#{CONFIG['RUBY_PATH']} #{CONFIG['BACKEND_ROOT']+'script'+'robot_bootstrap.rb'} --host localhost --port 4000 --ident #{ident} #{robot_dir}"
         LOG.debug cmd.inspect
-        @process = ChildProcess.new(cmd)
+        self.synchronize do
+          @process = ChildProcess.new(cmd)
+        end
         LOG.debug "Child Process For Robot #{ident} running on pid #{@process.pid}"
         @process.wait
         LOG.debug "Child Process For Robot #{ident} died."

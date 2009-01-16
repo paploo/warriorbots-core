@@ -5,6 +5,7 @@ require 'mutex_m'
 
 require 'double_state_buffered_object'
 require 'child_process'
+require 'waiter'
 
 module Sim
   class Robot < DoubleStateBufferedObject
@@ -36,7 +37,7 @@ module Sim
       robot = from_ident(handshake_data[:ident])
       robot.synchronize do
         robot.instance_variable_set(:@socket, socket)
-        robot.instance_variable_set(:@bootstrapped, true)
+        robot.instance_variable_get(:@bootstrap).done
       end
       return robot
     end
@@ -50,13 +51,19 @@ module Sim
     
       @components = []
     
-      @bootstrapped = false # Set to true once the script is up and running.
+      @bootstrap = Waiter.new # A waiter that is used to wait until bootstrap is complete.
       @socket  = nil # The socket connection to the robot process.
       @thread = nil # The thread that the robot process is running in. (It does a wait and only exits if the script exits)
       @process = nil # The process object for the robot process in case one needs to poke it.
     end
     
     attr_reader :ident, :robot_dir, :components
+    
+    def bootstrapped?
+      # When we have a bootstrap waiter, we haven't bootstrapped because it is
+      # set to nil upon bootstrap completion.
+      return !@bootstrap.nil?
+    end
   
     def boot
       # Run the bootstrapper, in a thread, passing in the connection port, the robot ident, and script directory path.
@@ -71,13 +78,9 @@ module Sim
         LOG.debug "Child Process For Robot #{ident} died."
       end
     
-      # Wait for it to bootstrap
-      start_wait = Time.now
-      while( !@bootstrapped )
-        sleep(0.1)
-        delta_t = Time.now - start_wait
-        raise RuntimeError, "Bootstrapping seems to have failed; waited 60 seconds." if delta_t > 60.0
-      end
+      # Wait for it to bootstrap, and then clear the waiter variable when done.
+      @bootstrap.wait   
+      @bootstrap = nil   
       LOG.debug( "Robot #{ident} bootstrapped." )
     end
   

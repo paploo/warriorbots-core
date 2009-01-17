@@ -1,6 +1,8 @@
 * Implement :initialize callback on all components, and the CoreComponent needs
   a :main or :main_loop callback
-  
+
+* Fix XML parsing to use a stack to find context when processing tokens.  (Can
+  this be made into a library somehow?)
   
 ---------- CALLBACKS / APIs COM ----------
 
@@ -12,7 +14,7 @@ The cycle is like this, with [sim] referring to steps on the main backend, and
   
 * [sim] A component, in the robot's main thread, sends a message over the
   network to call the callback on the remote robot.  It must block until the
-  callback is complete.
+  callback is complete (using Waiter).
   
 * [robot] The remote robot receives the callback request and calls the appropriate
   callback handler.

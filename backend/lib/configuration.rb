@@ -1,8 +1,6 @@
 require 'pathname'
-require 'singleshire'
 
 class Configuration < Hash
-  include Singleshire
   
   def initialize
     # Don't even try to call super.  The block will be passed in and give an

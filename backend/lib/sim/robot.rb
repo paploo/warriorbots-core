@@ -21,7 +21,7 @@ module Sim
         loop do
           socket = server.accept
           handshake_data = socket.read_object
-          self.handle_connect(socket, handshake_data)
+          handle_connect(socket, handshake_data)
         end
       end
     end
@@ -36,12 +36,17 @@ module Sim
       LOG.debug "handle_connect(#{socket.inspect}, #{handshake_data.inspect})"
       robot = from_ident(handshake_data[:ident])
       robot.synchronize do
-        robot.instance_variable_set(:@socket, socket)
-        robot.instance_variable_get(:@bootstrap).done
+        robot.send(:bootstrap, socket)
       end
       return robot
     end
-  
+    
+    class << self
+      private :handle_connect
+    end
+    
+    
+    
     def initialize(robot_dir)
       super()
       
@@ -53,7 +58,7 @@ module Sim
     
       @bootstrap = Waiter.new # A waiter that is used to wait until bootstrap is complete.
       @socket  = nil # The socket connection to the robot process.
-      @thread = nil # The thread that the robot process is running in. (It does a wait and only exits if the script exits)
+      @process_thread = nil # The thread that the robot process is running in. (It does a wait and only exits if the script exits)
       @process = nil # The process object for the robot process in case one needs to poke it.
     end
     
@@ -67,7 +72,7 @@ module Sim
   
     def boot
       # Run the bootstrapper, in a thread, passing in the connection port, the robot ident, and script directory path.
-      @thread = Thread.new do
+      @process_thread = Thread.new do
         cmd = "#{CONFIG['RUBY_PATH']} #{CONFIG['BACKEND_ROOT']+'script'+'robot_bootstrap.rb'} --host localhost --port 4000 --ident #{ident} #{robot_dir}"
         LOG.debug cmd.inspect
         self.synchronize do
@@ -82,6 +87,23 @@ module Sim
       @bootstrap.wait   
       @bootstrap = nil   
       LOG.debug( "Robot #{ident} bootstrapped." )
+    end
+    
+    private
+    
+    def bootstrap(socket)
+      @socket = socket
+      
+      @comm_thread = Thread.new do
+        command_obj = @socket.read_object
+        dispatch_command( command_obj )
+      end
+      
+      @bootstrap.done
+    end
+    
+    def dispatch_command( command_obj )
+      LOG.debug "COMMAND OBJ: #{command_obj.inspect}"
     end
   
   end

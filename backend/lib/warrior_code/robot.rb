@@ -23,7 +23,7 @@ class Robot
   def initialize(robot_dir)
     LOG.debug "LOAD ROBOT: #{robot_dir.inspect}"
     @robot_dir = Pathname.new(robot_dir).expand_path
-    @config = Core::RobotConfiguration.init(robot_dir+'config.xml')
+    @config = Core::RobotConfiguration.new(robot_dir+'config.xml')
     LOG.debug @config.inspect
   end
   

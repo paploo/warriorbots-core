@@ -8,7 +8,7 @@ $LOAD_PATH << Pathname.new(dir_path).expand_path + 'lib'
 require 'configuration'
 
 # Do the main configuration
-CONFIG = Configuration.init do |conf|
+CONFIG = Configuration.new do |conf|
   # What is the path to the ruby executable used to boot robots?
   conf['RUBY_PATH'] = Pathname.new('/usr/local/bin/ruby')
   

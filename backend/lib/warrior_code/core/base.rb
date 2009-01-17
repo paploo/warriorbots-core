@@ -4,6 +4,7 @@ require 'logger'
 
 require 'configuration'
 require 'extensions'
+require 'singleshire'
 require 'warrior_code/robot'
 
 module Core
@@ -35,6 +36,7 @@ module Core
     
     # Start the primary event loop
     def run
+      @socket.write_object({:foo => Time.now})
       sleep(2)
       LOG.info "[EXIT]"
     end
@@ -43,7 +45,7 @@ module Core
     
     def parse_arguments
       # Create the configuration and its default values
-      @config = Configuration.init do |conf|
+      @config = Configuration.new do |conf|
         conf['CONNECTION_HOST'] = 'localhost'
         conf['CONNECTION_PORT'] = 4000
         

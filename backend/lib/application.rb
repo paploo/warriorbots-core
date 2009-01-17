@@ -1,4 +1,5 @@
 require 'extensions'
+require 'singleshire'
 require 'sim'
 require 'application/command'
 

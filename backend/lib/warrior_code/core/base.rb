@@ -58,7 +58,7 @@ module Core
       
       # Parse the options
       ARGV.options do |opts|
-        opts.banner = "Usage: ruby robot_bootstrap.rb [opts]"
+        opts.banner = "Usage: ruby #{$0} [opts]"
         opts.separator ""
         opts.on('-h', '--host=h', String, 'Sets the host to establish a connection with.') {|v| @config['CONNECTION_ADDRESS'] = v}
         opts.separator ""

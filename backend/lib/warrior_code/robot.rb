@@ -1,5 +1,5 @@
+require 'robot_configuration'
 require 'warrior_code/component'
-require 'warrior_code/core/robot_configuration'
 
 # This is not namespaced for ease of use by new robot devs.
 #

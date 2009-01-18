@@ -1,6 +1,8 @@
 require 'xml_configuration'
 require 'pathname'
 
+# Configuration sublcass that can read the robot configuration file.  Used by
+# both the server and robot processes.
 module Core
   class RobotConfiguration < XMLConfiguration
     

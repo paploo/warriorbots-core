@@ -73,7 +73,7 @@ module Sim
     def boot
       # Run the bootstrapper, in a thread, passing in the connection port, the robot ident, and script directory path.
       @process_thread = Thread.new do
-        cmd = "#{CONFIG['RUBY_PATH']} #{CONFIG['BACKEND_ROOT']+'script'+'robot_bootstrap.rb'} --host localhost --port 4000 --ident #{ident} #{robot_dir}"
+        cmd = "#{CONFIG['RUBY_PATH']} #{CONFIG['BACKEND_ROOT']+'lib'+'warrior_code'+'core'+'bootstrap.rb'} --host localhost --port 4000 --ident #{ident} #{robot_dir}"
         LOG.debug cmd.inspect
         self.synchronize do
           @process = ChildProcess.new(cmd)

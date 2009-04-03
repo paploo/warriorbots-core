@@ -1,3 +1,6 @@
+# Note meant to be a required/loaded into a running process, this is the main
+# starting point for launching robot processes.
+
 # Configure any signal traps and exit loops
 Signal.trap('SIGINT') {exit(0)}
 Signal.trap('SIGQUIT') {exit(0)}
